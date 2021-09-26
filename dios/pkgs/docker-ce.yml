@@ -1,0 +1,7 @@
+id: docker-ce
+hosts: 
+  - 10.41.232.184
+  - 10.41.232.119
+params: {
+  'user': 'admin'
+}

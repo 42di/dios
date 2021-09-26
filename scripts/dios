@@ -1,0 +1,65 @@
+#!/usr/bin/env python3 
+# -*- Mode: python -*-
+
+import sys
+import logging
+import argparse
+
+import dios
+import dios.installers
+import dios.utils as utils
+
+logging.basicConfig(level = logging.INFO,format = '%(asctime)s - [%(levelname)s]: %(message)s')
+
+logger = logging.getLogger('dios')
+
+def ls(args):
+	print('Packages:')
+	for pkg in dios.load_pkgs():
+		print(pkg)
+
+def install(args):
+	pkgs = dios.load_pkgs()
+
+	pkg_id = args.pkg_id
+	if pkg_id not in pkgs:
+		print('pkg_id: %s does not exists.' % pkg_id, file=sys.stderr)
+		sys.exit(1)
+
+	installer = dios.installers.create_installer(pkg_id)
+	if not installer:
+		print('installer for pkg_id: %s does not exists.' % pkg_id, file=sys.stderr)
+		sys.exit(1)
+
+	instance_id = args.instance
+	instance_id_str = '' if not instance_id else instance_id
+
+	logger.info('install %s@%s ...' % (instance_id_str, pkg_id))
+	
+	success, result = installer.install(instance_id=instance_id, desc=pkgs[pkg_id])
+	if not success:
+		logger.error('install %s@%s failed, error: %s' % (instance_id_str, pkg_id, None if 'error' not in result else result['error']))
+		sys.exit(1)
+	else:
+		logger.info('%s@%s installed.' % (instance_id_str, pkg_id))
+
+def parse_args():
+	parser = argparse.ArgumentParser(prog='dios')
+
+	subparsers = parser.add_subparsers(help='sub-command help')
+	ls_parser = subparsers.add_parser('list')
+	ls_parser.set_defaults(func=ls)
+
+	install_parser = subparsers.add_parser('install')
+	install_parser.set_defaults(func=install)
+	install_parser.add_argument('pkg_id')
+	install_parser.add_argument('-i', '--instance', metavar=('INSTANCE_ID',))
+
+	return parser.parse_args()
+
+if __name__ == '__main__':
+
+	args = parse_args()
+
+	if 'func' in args:
+		args.func(args)

@@ -1,0 +1,11 @@
+id: kubernetes
+
+params: 
+  user: admin
+  control_plane_nodes:
+    - 10.41.232.163
+    - 10.41.232.229
+    - 10.41.232.92
+  worker_nodes:
+    - 10.41.232.184
+    - 10.41.232.119
